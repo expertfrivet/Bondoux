@@ -1,6 +1,6 @@
 // Garde l'appli dans le téléphone pour qu'elle s'ouvre sans réseau.
 // Changer VERSION à chaque mise en ligne d'une nouvelle version.
-const VERSION = "bondoux-v2";
+const VERSION = "bondoux-v3";
 const PREFIXE = "bondoux-";   // ne touche jamais au cache de l'appli ExpertFR (même site)
 const FICHIERS = ["./", "index.html", "app.js", "dictee.js", "photos.js", "data.js", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
