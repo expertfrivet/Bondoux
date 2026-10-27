@@ -276,13 +276,19 @@ const CHAMPS = [
   ["adresse_site", "Lieu du véhicule (si différent)"], ["cp_site", "CP du lieu", "", true], ["ville_site", "Ville du lieu", "", true],
 ];
 
-function formFiche(c) {
+// Champs de la fiche (les demi-largeurs vont par deux sur une ligne)
+function champsFiche(c, liste) {
   let html = "", demi = [];
   const champ = ([k, lbl, type]) => `<div><label>${lbl}</label><input data-k="${k}" type="${type || "text"}" value="${esc(c[k])}"${k === "nom" ? ' autocapitalize="characters"' : ""}></div>`;
-  for (const f of CHAMPS) {
+  for (const f of liste) {
     if (f[3]) { demi.push(f); if (demi.length === 2) { html += `<div class="row">${demi.map(champ).join("")}</div>`; demi = []; } }
     else html += champ(f);
   }
+  return html;
+}
+
+function formFiche(c) {
+  let html = champsFiche(c, CHAMPS);
   html += `<div><label>Objet de l'analyse</label><textarea data-k="objet">${esc(c.objet)}</textarea></div>
     <label>Statut du dossier</label><select data-k="statut">${DATA.STATUTS.map(s => `<option${s === (c.statut || "En attente") ? " selected" : ""}>${esc(s)}</option>`).join("")}</select>`;
   return html;
@@ -388,10 +394,10 @@ function rendreDevis(c, $c) {
 }
 
 // ── Appel client : prix et identité sur un seul écran ─────────────────────
-// Pendant l'appel, on règle le devis puis on note le nom. Le brouillon reste
+// Pendant l'appel, on règle le devis puis on remplit la fiche complète. Le brouillon reste
 // dans le téléphone (même si on change d'appli) mais aucune fiche n'est créée
 // avant « Créer la fiche » : un appel sans suite ne laisse rien dans la liste.
-const CHAMPS_APPEL = [["nom", "Nom"], ["prenom", "Prénom"], ["tel", "Téléphone", "tel"], ["mail", "Email", "email"], ["ville_site", "Ville du lieu du véhicule"]];
+const CHAMPS_APPEL = CHAMPS.filter(([k]) => k !== "dossier");   // le n° est donné à la création
 
 function rendreAppel() {
   document.getElementById("title").textContent = "Appel client";
@@ -406,11 +412,11 @@ function rendreAppel() {
     <div class="card prix"><div class="total big"><span>Total TTC</span><span id="ttc"></span></div><div class="muted" id="ht"></div></div>
     <div class="card">${selectsDevis(a.devis)}</div>
     <div class="card">
-      ${CHAMPS_APPEL.map(([k, lbl, type]) => `<div><label>${lbl}</label><input data-k="${k}" type="${type || "text"}" value="${esc(a[k])}"${k === "nom" ? ' autocapitalize="characters"' : ""}></div>`).join("")}
+      ${champsFiche(a, CHAMPS_APPEL)}
       <div><label>Objet de l'analyse</label><textarea data-k="objet">${esc(a.objet)}</textarea></div>
     </div>
     <button class="btn" id="creer">💾 Créer la fiche avec ce devis</button>
-    <p class="muted">La fiche prendra le n° ${esc(prochainDossier())}. L'adresse se complète ensuite dans la fiche.</p>
+    <p class="muted">La fiche prendra le n° ${esc(prochainDossier())}. Les onglets Fiche et Devis servent ensuite aux modifications.</p>
     <button class="btn light" id="vider">🧹 Effacer (appel sans suite)</button>`;
   prix();
   $main.querySelectorAll("[data-d]").forEach(sel => sel.onchange = () => { a.devis[sel.dataset.d] = sel.value; sauver(); prix(); });
